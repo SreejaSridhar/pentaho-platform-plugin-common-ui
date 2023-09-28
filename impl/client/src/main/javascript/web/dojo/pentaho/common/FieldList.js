@@ -254,6 +254,7 @@ define(["dojo/_base/declare", "dijit/_WidgetBase", "dijit/_Templated", "dojo/on"
     dialogContainer.appendChild(dialogContentContainer);
     
     document.body.appendChild(dialogContainer);
+    dialogContentContainer.querySelector("#MA_name").focus();
   },
   
   configureFor: function(datasource, searchContainer) {
@@ -311,6 +312,7 @@ define(["dojo/_base/declare", "dijit/_WidgetBase", "dijit/_Templated", "dojo/on"
     calc.elementType = pentaho.pda.Column.ELEMENT_TYPES.CATEGORY;
     calc.dataType = pentaho.pda.Column.DATA_TYPES.NONE;
     calc.name = "Calculated Fields";
+    calc.class="CAT_CALC_FIELD";
 
     categories.push(calc);
     
@@ -365,6 +367,9 @@ define(["dojo/_base/declare", "dijit/_WidgetBase", "dijit/_Templated", "dojo/on"
             {
               "id": "catId-add-button",
               "class": "pentaho-addbutton icon-zoomable",
+              "tabindex": "-1",
+              "collapsed": "true",
+              "expanded":"false",
               "onclick": function() {
                 this.openCalcField();
               }.bind(this)
@@ -639,6 +644,37 @@ define(["dojo/_base/declare", "dijit/_WidgetBase", "dijit/_Templated", "dojo/on"
       this.dndObj.anchor = node;
       this.dndObj._addItemClass(node, "Anchor");
       this.dndObj.selection[id] = 1;
+    }
+  },
+
+  _isFieldSelected: function(elem) {
+    return elem.classList.contains('pentaho-listitem-selected');
+  },
+
+  _toggleSelection: function(node){
+    if(this._isFieldSelected(node)) {
+      this.dndObj._removeItemClass(node, "Anchor");
+      delete this.dndObj.selection[node.getAttribute("id")];
+    } else {
+      this._updateMultiSelectionForContextMenu(node.getAttribute("fieldId"));
+    }
+  },
+
+  _updateMultiSelectionForContextMenu: function(fieldId) {
+    var selected = false;
+    this.dndObj.forInSelectedItems(function(item, id) {
+      if (item.data.fieldId === fieldId) {
+        selected = true;
+      }
+    });
+
+    var id = "field-" + fieldId;
+    var node = dom.byId(id);
+
+    if (!selected) {
+      this.dndObj.anchor = node;
+      this.dndObj._addItemClass(node, "Anchor");
+      this.dndObj.selection[id] = this.dndObj.getSelectedNodes().length + 1;
     }
   },
 
